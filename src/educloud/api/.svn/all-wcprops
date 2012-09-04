@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/46/trunk/educloud-api/src/com/google/educloud/api
+END
+EduCloudAuthorization.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/83/trunk/educloud-api/src/com/google/educloud/api/EduCloudAuthorization.java
+END
+EduCloudConfig.java
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/70/trunk/educloud-api/src/com/google/educloud/api/EduCloudConfig.java
+END
+EduCloudFactory.java
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/!svn/ver/83/trunk/educloud-api/src/com/google/educloud/api/EduCloudFactory.java
+END

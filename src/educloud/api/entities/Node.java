@@ -1,0 +1,94 @@
+package  educloud.api.entities;
+
+
+/**
+ * Classe para representar um nodo da nuvem.
+ *
+ */
+public class Node {
+
+	private int id;
+
+	private String hostname;
+
+	private int port;
+
+	private boolean connectedToVBox;
+
+	private String vboxVersion;
+
+	private long availMemory;
+
+	private long totalMemory;
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
+	}
+	/**
+	 * @param ip the ip to set
+	 */
+	public void setHostname(String ip) {
+		this.hostname = ip;
+	}
+	/**
+	 * @return the ip
+	 */
+	public String getHostName() {
+		return hostname;
+	}
+	/**
+	 * @param port the port to set
+	 */
+	public void setPort(int port) {
+		this.port = port;
+	}
+	/**
+	 * @return the port
+	 */
+	public int getPort() {
+		return port;
+	}
+	public boolean isConnectedToVBox() {
+		return connectedToVBox;
+	}
+	public void setConnectedToVBox(boolean connectedToVBox) {
+		this.connectedToVBox = connectedToVBox;
+	}
+	public String getVboxVersion() {
+		return vboxVersion;
+	}
+	public void setVboxVersion(String vboxVersion) {
+		this.vboxVersion = vboxVersion;
+	}
+
+	public long getAvailMemory() {
+		return availMemory;
+	}
+	public void setAvailMemory(long availMemory) {
+		this.availMemory = availMemory;
+	}
+	public long getTotalMemory() {
+		return totalMemory;
+	}
+	public void setTotalMemory(long totalMemory) {
+		this.totalMemory = totalMemory;
+	}
+
+	public boolean equals(Object obj){
+		if( obj == null )
+			return false;
+		else if( !(obj instanceof Node) )
+			return false;
+		else
+			return ((Node)obj).getId() == this.getId();
+	}
+}

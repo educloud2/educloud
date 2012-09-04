@@ -1,0 +1,169 @@
+package  educloud.cloudserver.rs;
+
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.apache.log4j.Logger;
+
+import  educloud.api.entities.EduCloudErrorMessage;
+import  educloud.cloudserver.database.dao.TemplateDao;
+import  educloud.cloudserver.managers.StorageManager;
+import  educloud.internal.entities.Template;
+import  com.google.gson.reflect.TypeToken;
+import com.sun.jersey.spi.container.servlet.PerSession;
+
+@PerSession
+@Path("/template")
+public class TemplateRest extends CloudResource {
+
+	private static Logger LOG = Logger.getLogger(TemplateRest.class);
+
+	/**
+	 * this method will retrieve all templates
+	 *
+	 * @return
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/describeTemplates")
+	public Response describeTemplates() {
+
+		LOG.debug("Application will list all templates");
+
+		//Recupera a lista de templates da base de dados.
+		List< educloud.internal.entities.Template> listaTemplates =
+			TemplateDao.getInstance().getAll();
+
+		//Array para retorno
+		Template[] templates = new Template[listaTemplates.size()];
+
+		//Para controle do indice do array
+		int indice = 0;
+
+		//Coloca a lista interna no array de maquinas externas
+		for(  educloud.internal.entities.Template templateInterno : listaTemplates )
+		{
+			Template templateRetorno = new Template();
+			templateRetorno.setId(templateInterno.getId());
+			templateRetorno.setName(templateInterno.getName());
+			templateRetorno.setFilename(templateInterno.getFilename());
+			templateRetorno.setMemorySize(templateInterno.getMemorySize());
+			templateRetorno.setOsType(templateInterno.getOsType());
+			templateRetorno.setDescription(templateInterno.getDescription());
+			templateRetorno.setNumberProcessors(templateInterno.getNumberProcessors());
+			templateRetorno.setDevice(templateInterno.getDevice());
+			templateRetorno.setPort(templateInterno.getPort());
+			templates[indice] = templateRetorno;
+
+			indice++;
+		}
+
+		//Retorna o array de templates.
+		return Response.ok(gson.toJson(templates), MediaType.APPLICATION_JSON).build();
+	}
+
+	/**
+	 * this method will create a new template
+	 *
+	 * @return
+	 */
+	@PUT
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/create")
+	public Response createTemplate(String jsonTemplate) {
+
+		 educloud.api.entities.Template extTemplate = gson.fromJson(jsonTemplate,  educloud.api.entities.Template.class);
+
+		Template template = new Template();
+		template.setMemorySize(extTemplate.getMemorySize());
+		template.setFilename(extTemplate.getFilename());
+		template.setName(extTemplate.getName());
+		template.setOsType(extTemplate.getOsType());
+		template.setDescription(extTemplate.getDescription());
+		template.setNumberProcessors(extTemplate.getNumberProcessors());
+	
+		List< educloud.internal.entities.Template> listaTemplates =
+				TemplateDao.getInstance().getAll();
+		StorageManager stManager = new StorageManager();
+		if (stManager.atachTemplateToStorage(listaTemplates, template)){
+			TemplateDao.getInstance().insert(template);
+			return Response.ok(gson.toJson(template), MediaType.APPLICATION_JSON).build();
+		} else {
+			return Response.serverError().build();
+		}	
+	}
+
+	/**
+	 * this method will return a cloud template.
+	 *
+	 * @param tplId
+	 * @return
+	 */
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/get/{id: [0-9]*}")
+	public Response getTemplate(@PathParam("id") int tplId) {
+
+		int id = Integer.valueOf(tplId);
+
+		Template loadedTemplate = TemplateDao.getInstance().findById(id);
+
+		/* validations */
+		if (loadedTemplate == null) {
+			EduCloudErrorMessage error = new EduCloudErrorMessage();
+			error.setCode("CS-303");
+			error.setHint("Set template id and try again");
+			error.setText("Apparently you are trying to get a nonexistent template");
+
+			// return error message
+			return Response.status(400).entity(gson.toJson(error)).build();
+		}
+
+		 educloud.api.entities.Template template = new  educloud.api.entities.Template();
+		template.setId(loadedTemplate.getId());
+		template.setName(loadedTemplate.getName());
+		template.setOsType(loadedTemplate.getOsType());
+		template.setDescription(loadedTemplate.getDescription());
+		template.setNumberProcessors(loadedTemplate.getNumberProcessors());
+		
+		template.setDevice(loadedTemplate.getDevice());
+		template.setPort(loadedTemplate.getPort());
+
+		// return template
+		return Response.ok(gson.toJson(template), MediaType.APPLICATION_JSON).build();
+	}
+
+	/**
+	 * this method will delete a template
+	 *
+	 * @return
+	 */
+	@PUT
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/delete")
+	public Response deleteTemplates(String jsonTemplates) {
+
+		Type type = new TypeToken<ArrayList<Integer>>(){}.getType();
+		List<Integer> templates = gson.fromJson(jsonTemplates, type);
+
+		StorageManager stManager = new StorageManager();
+		
+		for (Integer tplId : templates) {
+			Template tplTemp = TemplateDao.getInstance().findById(tplId);
+			stManager.detachTemplateFromStorage(tplTemp);
+			TemplateDao.getInstance().remove(tplId);
+		}
+
+		return Response.ok().build();
+	}
+
+}
